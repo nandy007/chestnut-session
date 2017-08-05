@@ -1,6 +1,6 @@
 {
   "name": "chestnut-session",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "for chestnut-app",
   "main": "index.js",
   "scripts": {

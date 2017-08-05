@@ -96,6 +96,7 @@ store.createSessionObject = function (obj, oldSession) {
     const props = [{ name: 'sid', val: _sid }, { name: 'custom', val: _custom }];
     for (let prop of props) {
         Object.defineProperty(session, prop.name, {
+            configurable: true,
             enumerable: false,
             get: function () {
                 return prop.val;
@@ -108,6 +109,7 @@ store.createSessionObject = function (obj, oldSession) {
     
     // 提供hasData属性判断session是否有设置
     Object.defineProperty(session, 'hasData', {
+        configurable: true,
         enumerable: false,
         get: function () {
             return Object.keys(session || {}).length > 0;
@@ -124,11 +126,14 @@ store.createSessionObject = function (obj, oldSession) {
   * @return  {Function}    符合Koa中间件处理函数
   */
 let middleware = function (options) {
+    options = options||{};
     // 如果没有设置key则使用SEESIONID作为key
     if (!options.key) options.key = 'SESSIONID';
 
     // 获取koasession要求的store格式
-    options.store = store(options.storeConfig);
+    if(typeof options.storeConfig==='object') options.store = store(options.storeConfig);
+
+    const koaSessionMiddleware = koaSession(options);
 
     return async function (ctx, next) {
         // 设置session对象
@@ -146,16 +151,8 @@ let middleware = function (options) {
         const sessionId = ctx.cookies.get(options.key);
         let id;// 新的session分配
         // 如果cookie不存在则创建并跳转，但是并未入库！！！
-        /*if (!sessionId) {
-            const sid = uid.sync(24);
-            ctx.cookies.set(options.key, sid);
-            ctx.cookies.get(options.key);
-            ctx.redirect(ctx.request.url);
-        } else {
-            
-        }*/
         // 执行koasession
-        await koaSession(options)(ctx, function () {
+        await koaSessionMiddleware(ctx, function () {
             let sid;
             // 如果cookie不存在的时候自动生成sid
             if (!sessionId) {
