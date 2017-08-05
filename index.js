@@ -21,7 +21,7 @@ const CLEANUP_INTERVAL = 15 * 60 * 1000;
   * @param   {Object}      ctx          [Koa上下文对象]
   * @return  {Object}      cookie配置
   */
-const getCookie = function(opts, ctx){
+const getCookie = function (opts, ctx) {
     const cookie = opts.cookie;
     const obj = cookie instanceof Function ? cookie(ctx) : cookie;
     const options = Object.assign({
@@ -82,23 +82,30 @@ store.setCleanup = function (sessionStore) {
 
 /**
   * 创建session对象函数
-  * @param   {Object}      obj         [session对象]
-  * @param   {String}      sid         [会话id]
-  * @return  {Object}     session对象
+  * @param   {Object}      obj           [session对象]
+  * @param   {Object}      oldSession    [老的会话对象]
+  * @return  {Object}      session对象
   */
-store.createSessionObject = function (obj, sid) {
+store.createSessionObject = function (obj, oldSession) {
     let session = obj || {};
-    let _sid = sid || '';
-    // session的sid属性不可遍历
-    Object.defineProperty(session, 'sid', {
-        enumerable: false,
-        get: function () {
-            return _sid;
-        },
-        set: function (newVal) {
-            _sid = newVal;
-        }
-    });
+    oldSession = oldSession || {};
+    let _sid = oldSession.sid || '';
+    let _custom = oldSession.custom || {};
+
+    // 设置不可遍历属性
+    const props = [{ name: 'sid', val: _sid }, { name: 'custom', val: _custom }];
+    for (let prop of props) {
+        Object.defineProperty(session, prop.name, {
+            enumerable: false,
+            get: function () {
+                return prop.val;
+            },
+            set: function (newVal) {
+                prop.val = newVal;
+            }
+        });
+    }
+    
     // 提供hasData属性判断session是否有设置
     Object.defineProperty(session, 'hasData', {
         enumerable: false,
@@ -106,7 +113,7 @@ store.createSessionObject = function (obj, sid) {
             return Object.keys(session || {}).length > 0;
         }
     });
-    
+
     return session;
 };
 
@@ -132,7 +139,7 @@ let middleware = function (options) {
                 return _session;
             },
             set: function (newVal) {
-                _session = store.createSessionObject(newVal, _session.sid);
+                _session = store.createSessionObject(newVal, _session);
             }
         });
         // 从cookie中获取sessionId
@@ -151,11 +158,11 @@ let middleware = function (options) {
         await koaSession(options)(ctx, function () {
             let sid;
             // 如果cookie不存在的时候自动生成sid
-            if(!sessionId){
+            if (!sessionId) {
                 id = uid.sync(24);
                 sid = options.key + ':' + id;
                 ctx.session = {};
-            }else{
+            } else {
                 sid = options.key + ':' + sessionId;
             }
             ctx.session.sid = sid;
@@ -164,7 +171,7 @@ let middleware = function (options) {
 
         // 如果cookie不存在的时候自动创建cookie，以覆盖koa-session-minimal生成的cookie
         if (!sessionId) {
-            const cookie= getCookie(options, ctx);
+            const cookie = getCookie(options, ctx);
             // 重新将生成的sid设置到cookie中
             ctx.cookies.set(options.key, id, cookie);
         }
