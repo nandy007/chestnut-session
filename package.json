@@ -1,10 +1,10 @@
 {
   "name": "chestnut-session",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "for chestnut-app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require mocha-babel"
   },
   "repository": {
     "type": "git",
@@ -12,7 +12,15 @@
   },
   "author": "nandy007",
   "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.4.7",
+    "mocha": "*",
+    "koa": "^2.0.0",
+    "should": "*",
+    "should-promised": "^0.3.0"
+  },
   "dependencies": {
+    "chestnut-utils": "^0.2.0",
     "koa-session-minimal": "^3.0.4",
     "uid-safe" : "^2.1.4"
   },
