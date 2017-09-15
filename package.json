@@ -1,6 +1,6 @@
 {
   "name": "chestnut-session",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "for chestnut-app",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,9 @@
   },
   "dependencies": {
     "chestnut-utils": "^0.2.0",
+    "ioredis": "^3.1.4",
     "koa-session-minimal": "^3.0.4",
-    "uid-safe" : "^2.1.4"
+    "uid-safe": "^2.1.4"
   },
   "bugs": {
     "url": "https://github.com/nandy007/chestnut-session/issues"
